@@ -3,6 +3,8 @@ use clap::{Parser, Subcommand};
 // use crate::protocol::{Request, Response};
 
 use dialoguer::Password;
+use rpassword::read_password;
+use std::io::{self, Write};
 
 use secretd::server;
 use secretd::client;
@@ -48,7 +50,9 @@ async fn main() {
         }
 
         Commands::Set { key } => {
-            match client::run_request(Request::Set { key, value: xpassword("x")}, socket).await {
+            let value = xpassword("x");
+            println!("pass: {}", value);
+            match client::run_request(Request::Set { key, value }, socket).await {
                 Ok(resp) => println!("{:?}", resp),
                 Err(e) => eprintln!("Error: {}", e),
             }
@@ -78,9 +82,21 @@ async fn main() {
 }
 
 
-fn xpassword(title: &str) -> String {
+fn xpassword1(title: &str) -> String {
     Password::new()
         .with_prompt(title)
         .interact()
         .unwrap()
+}
+
+
+/// Prompt the user for a password via terminal input (not shown on screen)
+fn xpassword11(prompt: &str) -> io::Result<String> {
+    print!("{}", prompt);
+    io::stdout().flush()?; // Ensure prompt is shown before reading input
+    read_password()
+}
+
+fn xpassword(prompt: &str) -> String {
+    xpassword11(prompt).unwrap()
 }

@@ -75,7 +75,7 @@ pub async fn run_server(socket_path: &str, ttl: u64, password: &str) -> std::io:
             let res = handle_request(req, &store).await;
             // let res_data = serde_json::to_vec(&res).expect("Serialize failed");
             let res_data = bincode::serialize(&res).expect("Serialize failed");
-            
+
             if let Err(e) = socket.write_all(&res_data).await {
                 eprintln!("Failed to write response: {:?}", e);
             }
